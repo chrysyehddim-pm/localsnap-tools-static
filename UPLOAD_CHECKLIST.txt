@@ -1,0 +1,18 @@
+LocalSnap Tools Static 上傳檢查表
+
+正確根目錄：
+- index.html
+- README.md
+- UPLOAD_CHECKLIST.txt
+
+不要有：
+- package.json
+- package-lock.json
+- node_modules
+- app/
+- next.config.mjs
+
+部署建議：
+1. 如果用 GitHub Pages，Settings → Pages → Deploy from branch → main / root。
+2. 如果用 Vercel，Framework Preset 選 Other，Build Command 留空。
+3. 打開網站後，用瀏覽器 DevTools → Network 確認處理檔案時沒有 upload request。

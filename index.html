@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LocalSnap Tools</title>
+  <meta name="description" content="LocalSnap Tools 是瀏覽器本機處理的 PDF、圖片與 PPTX 小工具箱。" />
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #657083;
+      --line: #e5e8f0;
+      --brand: #2f7dff;
+      --brand-soft: #eaf2ff;
+      --ok: #1b8a5a;
+      --warn: #a86a00;
+      --danger: #b91c1c;
+      --shadow: 0 18px 50px rgba(24, 39, 75, 0.08);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #edf5ff, transparent 38%), var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    a { color: var(--brand); }
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 34px 20px 64px; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    .hero-card, .privacy-card, .tool-card {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(229,232,240,0.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero-card { padding: 30px; }
+    .eyebrow { font-weight: 800; color: var(--brand); letter-spacing: .08em; font-size: 13px; text-transform: uppercase; }
+    h1 { margin: 8px 0 10px; font-size: clamp(32px, 5vw, 54px); line-height: 1.05; letter-spacing: -0.04em; }
+    h2 { margin: 0 0 14px; font-size: 24px; letter-spacing: -0.02em; }
+    h3 { margin: 22px 0 10px; font-size: 18px; }
+    p { margin: 8px 0; color: var(--muted); }
+    .privacy-card { padding: 22px; }
+    .privacy-card strong { color: var(--ok); }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .badge { padding: 8px 12px; background: var(--brand-soft); color: #1453b8; border-radius: 999px; font-weight: 700; font-size: 13px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+    .tool-card { padding: 22px; min-height: 100%; }
+    .tool-card header { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+    .icon { width: 44px; height: 44px; border-radius: 15px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); font-size: 22px; flex: 0 0 auto; }
+    .tool-card small { display: block; color: var(--muted); margin-top: 2px; }
+    label { display: block; font-weight: 750; font-size: 14px; margin: 12px 0 6px; }
+    input[type="file"], input[type="number"], input[type="text"], select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 12px;
+      font: inherit;
+      outline: none;
+    }
+    input[type="range"] { width: 100%; }
+    input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(47, 125, 255, 0.12); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .check { display: flex; gap: 9px; align-items: center; margin-top: 10px; color: var(--muted); font-size: 14px; }
+    .check input { width: 18px; height: 18px; }
+    button {
+      width: 100%;
+      margin-top: 16px;
+      border: 0;
+      border-radius: 15px;
+      padding: 12px 16px;
+      background: var(--brand);
+      color: white;
+      font-weight: 850;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(47, 125, 255, .2);
+    }
+    button.secondary { background: #111827; box-shadow: 0 12px 24px rgba(17, 24, 39, .12); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .hint { font-size: 13px; color: var(--muted); }
+    .status {
+      margin-top: 16px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fbfcff;
+      color: var(--muted);
+      font-size: 14px;
+      min-height: 46px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    .ok { color: var(--ok); font-weight: 800; }
+    .warn { color: var(--warn); font-weight: 800; }
+    .danger { color: var(--danger); font-weight: 800; }
+    .footer { margin-top: 24px; color: var(--muted); font-size: 13px; text-align: center; }
+    .divider { height: 1px; background: var(--line); margin: 18px 0; }
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Local-first file tools</div>
+        <h1>LocalSnap Tools</h1>
+        <p>PDF、圖片、PPTX 的日常小工具箱。網頁有網址，但檔案在你的瀏覽器本機處理，不上傳、不登入、不存雲端。</p>
+        <div class="badges">
+          <span class="badge">PDF 優化 / 合併</span>
+          <span class="badge">圖片壓縮 / 轉檔</span>
+          <span class="badge">圖片尺寸調整</span>
+          <span class="badge">純色背景去背</span>
+          <span class="badge">PPTX 圖片壓縮</span>
+        </div>
+      </div>
+      <div class="privacy-card">
+        <h2>隱私原則</h2>
+        <p><strong>檔案只在你的裝置處理。</strong></p>
+        <p>本工具沒有後端 API、沒有資料庫、沒有登入，也不會把你的檔案送到伺服器。</p>
+        <p class="hint">此靜態版會從 CDN 載入 JSZip / PDF-Lib 程式庫；這些程式庫在你的瀏覽器中執行，檔案內容不會上傳給 CDN。</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="tool-card">
+        <header>
+          <div>
+            <h2>PDF 工具</h2>
+            <small>安全優化、合併 PDF。適合 10MB 以下文件。</small>
+          </div>
+          <div class="icon">PDF</div>
+        </header>
+        <label for="pdfFiles">選擇 PDF</label>
+        <input id="pdfFiles" type="file" accept="application/pdf,.pdf" multiple />
+        <label for="pdfMode">處理方式</label>
+        <select id="pdfMode">
+          <option value="optimize">安全優化 / 基礎壓縮</option>
+          <option value="merge">合併多個 PDF</option>
+        </select>
+        <p class="hint">安全優化會重存 PDF 結構，通常可小幅減少檔案；若原檔已高度壓縮，效果會有限。</p>
+        <button id="pdfBtn">處理 PDF</button>
+        <div id="pdfStatus" class="status">等待選擇檔案。</div>
+      </article>
+
+      <article class="tool-card">
+        <header>
+          <div>
+            <h2>圖片工具</h2>
+            <small>壓縮、轉 JPG / PNG / WebP、調整尺寸、批次下載。</small>
+          </div>
+          <div class="icon">IMG</div>
+        </header>
+        <label for="imageFiles">選擇圖片</label>
+        <input id="imageFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple />
+        <div class="row">
+          <div>
+            <label for="imageFormat">輸出格式</label>
+            <select id="imageFormat">
+              <option value="original">保持原格式</option>
+              <option value="jpeg">JPG</option>
+              <option value="png">PNG</option>
+              <option value="webp">WebP</option>
+            </select>
+          </div>
+          <div>
+            <label for="imageQuality">品質 <span id="qualityText">80</span></label>
+            <input id="imageQuality" type="range" min="10" max="100" value="80" />
+          </div>
+        </div>
+        <label for="preset">常用尺寸</label>
+        <select id="preset">
+          <option value="">不套用</option>
+          <option value="1920x1080">16:9 1920×1080</option>
+          <option value="1280x720">16:9 1280×720</option>
+          <option value="1080x1080">1:1 1080×1080</option>
+          <option value="1200x628">社群橫幅 1200×628</option>
+          <option value="704x396">履歷專案圖 704×396</option>
+        </select>
+        <div class="row">
+          <div>
+            <label for="targetW">寬度</label>
+            <input id="targetW" type="number" min="1" placeholder="例如 1280" />
+          </div>
+          <div>
+            <label for="targetH">高度</label>
+            <input id="targetH" type="number" min="1" placeholder="例如 720" />
+          </div>
+        </div>
+        <label class="check"><input id="keepRatio" type="checkbox" checked /> 等比例縮放</label>
+        <label class="check"><input id="removeBg" type="checkbox" /> 純色背景去背，輸出透明 PNG</label>
+        <label for="bgTolerance">去背容差 <span id="toleranceText">34</span></label>
+        <input id="bgTolerance" type="range" min="5" max="120" value="34" />
+        <label for="namePrefix">檔名前綴</label>
+        <input id="namePrefix" type="text" value="localsnap_" />
+        <button id="imageBtn">處理圖片</button>
+        <div id="imageStatus" class="status">等待選擇檔案。</div>
+      </article>
+
+      <article class="tool-card">
+        <header>
+          <div>
+            <h2>PPTX 壓縮</h2>
+            <small>壓縮 PPTX 內嵌圖片。舊版 PPT 不支援。</small>
+          </div>
+          <div class="icon">PPT</div>
+        </header>
+        <label for="pptFile">選擇 PPTX</label>
+        <input id="pptFile" type="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+        <div class="row">
+          <div>
+            <label for="pptQuality">圖片品質 <span id="pptQualityText">76</span></label>
+            <input id="pptQuality" type="range" min="30" max="95" value="76" />
+          </div>
+          <div>
+            <label for="pptMaxEdge">最大邊長</label>
+            <input id="pptMaxEdge" type="number" min="320" value="1600" />
+          </div>
+        </div>
+        <p class="hint">此功能會處理 ppt/media 內的 JPG / PNG。複雜簡報建議保留原檔備份。</p>
+        <button id="pptBtn" class="secondary">壓縮 PPTX</button>
+        <div id="pptStatus" class="status">等待選擇檔案。</div>
+      </article>
+    </section>
+
+    <p class="footer">LocalSnap Tools static build. No upload. No backend. No database.</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    $('imageQuality').addEventListener('input', () => $('qualityText').textContent = $('imageQuality').value);
+    $('bgTolerance').addEventListener('input', () => $('toleranceText').textContent = $('bgTolerance').value);
+    $('pptQuality').addEventListener('input', () => $('pptQualityText').textContent = $('pptQuality').value);
+    $('preset').addEventListener('change', () => {
+      const value = $('preset').value;
+      if (!value) return;
+      const [w, h] = value.split('x').map(Number);
+      $('targetW').value = w;
+      $('targetH').value = h;
+    });
+
+    function setStatus(id, message, type = '') {
+      const el = $(id);
+      el.innerHTML = type ? `<span class="${type}">${message}</span>` : message;
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let n = bytes;
+      let i = 0;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+    }
+
+    function safeBaseName(name) {
+      return name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]+/g, '_').slice(0, 80) || 'file';
+    }
+
+    function downloadBlob(blob, name) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function blobToArrayBuffer(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+      });
+    }
+
+    function loadImage(fileOrBlob) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(fileOrBlob);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('圖片讀取失敗')); };
+        img.src = url;
+      });
+    }
+
+    function outputMime(format, originalType, forcePng) {
+      if (forcePng) return 'image/png';
+      if (format === 'original') return ['image/jpeg', 'image/png', 'image/webp'].includes(originalType) ? originalType : 'image/jpeg';
+      if (format === 'jpeg') return 'image/jpeg';
+      if (format === 'png') return 'image/png';
+      if (format === 'webp') return 'image/webp';
+      return 'image/jpeg';
+    }
+
+    function extFromMime(mime) {
+      if (mime === 'image/png') return 'png';
+      if (mime === 'image/webp') return 'webp';
+      return 'jpg';
+    }
+
+    function getTargetSize(srcW, srcH, targetW, targetH, keepRatio) {
+      const w = Number(targetW) || 0;
+      const h = Number(targetH) || 0;
+      if (!w && !h) return { width: srcW, height: srcH };
+      if (!keepRatio) return { width: w || srcW, height: h || srcH };
+      if (w && h) {
+        const scale = Math.min(w / srcW, h / srcH);
+        return { width: Math.max(1, Math.round(srcW * scale)), height: Math.max(1, Math.round(srcH * scale)) };
+      }
+      if (w) return { width: w, height: Math.max(1, Math.round(srcH * (w / srcW))) };
+      return { width: Math.max(1, Math.round(srcW * (h / srcH))), height: h };
+    }
+
+    function removeSolidBackground(canvas, tolerance) {
+      const ctx = canvas.getContext('2d');
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = img.data;
+      const samples = [
+        0,
+        (canvas.width - 1) * 4,
+        ((canvas.height - 1) * canvas.width) * 4,
+        ((canvas.height - 1) * canvas.width + (canvas.width - 1)) * 4
+      ];
+      const bg = [0, 0, 0];
+      for (const idx of samples) {
+        bg[0] += data[idx]; bg[1] += data[idx + 1]; bg[2] += data[idx + 2];
+      }
+      bg[0] /= samples.length; bg[1] /= samples.length; bg[2] /= samples.length;
+      const t = Number(tolerance);
+      for (let i = 0; i < data.length; i += 4) {
+        const dist = Math.sqrt((data[i]-bg[0])**2 + (data[i+1]-bg[1])**2 + (data[i+2]-bg[2])**2);
+        if (dist <= t) data[i + 3] = 0;
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function canvasToBlob(canvas, mime, quality) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), mime, quality);
+      });
+    }
+
+    async function processImages() {
+      const files = Array.from($('imageFiles').files || []);
+      if (!files.length) return setStatus('imageStatus', '請先選擇圖片。', 'warn');
+      $('imageBtn').disabled = true;
+      setStatus('imageStatus', `處理中：0 / ${files.length}`);
+      try {
+        const zip = new JSZip();
+        const quality = Number($('imageQuality').value) / 100;
+        const format = $('imageFormat').value;
+        const targetW = $('targetW').value;
+        const targetH = $('targetH').value;
+        const keepRatio = $('keepRatio').checked;
+        const removeBg = $('removeBg').checked;
+        const prefix = $('namePrefix').value || '';
+        const tolerance = Number($('bgTolerance').value);
+        const report = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const img = await loadImage(file);
+          const size = getTargetSize(img.naturalWidth, img.naturalHeight, targetW, targetH, keepRatio);
+          const canvas = document.createElement('canvas');
+          canvas.width = size.width;
+          canvas.height = size.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, size.width, size.height);
+          if (removeBg) removeSolidBackground(canvas, tolerance);
+          const mime = outputMime(format, file.type, removeBg);
+          let blob = await canvasToBlob(canvas, mime, quality);
+          if (!blob && mime !== 'image/jpeg') blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+          if (!blob) throw new Error(`${file.name} 輸出失敗`);
+          const ext = extFromMime(blob.type || mime);
+          const outName = `${prefix}${safeBaseName(file.name)}.${ext}`;
+          zip.file(outName, await blobToArrayBuffer(blob));
+          const delta = file.size ? Math.round((1 - blob.size / file.size) * 100) : 0;
+          report.push(`${file.name}: ${formatBytes(file.size)} → ${formatBytes(blob.size)} (${delta >= 0 ? '-' + delta : '+' + Math.abs(delta)}%)`);
+          setStatus('imageStatus', `處理中：${i + 1} / ${files.length}\n${report.slice(-3).join('\n')}`);
+        }
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        downloadBlob(zipBlob, `localsnap_images_${Date.now()}.zip`);
+        setStatus('imageStatus', `完成，已下載 ZIP。\n${report.join('\n')}`, 'ok');
+      } catch (err) {
+        setStatus('imageStatus', `處理失敗：${err.message || err}`, 'danger');
+      } finally {
+        $('imageBtn').disabled = false;
+      }
+    }
+
+    async function processPdf() {
+      const files = Array.from($('pdfFiles').files || []);
+      if (!files.length) return setStatus('pdfStatus', '請先選擇 PDF。', 'warn');
+      $('pdfBtn').disabled = true;
+      setStatus('pdfStatus', 'PDF 處理中...');
+      try {
+        const mode = $('pdfMode').value;
+        const { PDFDocument } = PDFLib;
+        if (mode === 'merge') {
+          if (files.length < 2) return setStatus('pdfStatus', '合併模式請至少選擇兩個 PDF。', 'warn');
+          const merged = await PDFDocument.create();
+          for (const file of files) {
+            const src = await PDFDocument.load(await file.arrayBuffer());
+            const pages = await merged.copyPages(src, src.getPageIndices());
+            pages.forEach((p) => merged.addPage(p));
+          }
+          merged.setProducer('LocalSnap Tools');
+          const bytes = await merged.save({ useObjectStreams: true });
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          downloadBlob(blob, `localsnap_merged_${Date.now()}.pdf`);
+          setStatus('pdfStatus', `完成合併：${files.length} 個 PDF → ${formatBytes(blob.size)}`, 'ok');
+          return;
+        }
+
+        const zip = new JSZip();
+        const report = [];
+        for (const file of files) {
+          const doc = await PDFDocument.load(await file.arrayBuffer());
+          doc.setProducer('LocalSnap Tools');
+          const bytes = await doc.save({ useObjectStreams: true });
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const outName = `localsnap_${safeBaseName(file.name)}_optimized.pdf`;
+          zip.file(outName, bytes);
+          const delta = file.size ? Math.round((1 - blob.size / file.size) * 100) : 0;
+          report.push(`${file.name}: ${formatBytes(file.size)} → ${formatBytes(blob.size)} (${delta >= 0 ? '-' + delta : '+' + Math.abs(delta)}%)`);
+        }
+        if (files.length === 1) {
+          const single = zip.file(Object.keys(zip.files)[0]);
+          const blob = await single.async('blob');
+          downloadBlob(blob, Object.keys(zip.files)[0]);
+        } else {
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          downloadBlob(zipBlob, `localsnap_pdf_${Date.now()}.zip`);
+        }
+        setStatus('pdfStatus', `完成。\n${report.join('\n')}`, 'ok');
+      } catch (err) {
+        setStatus('pdfStatus', `PDF 處理失敗：${err.message || err}\n若 PDF 有密碼、簽章、特殊表單或加密限制，可能無法在瀏覽器直接處理。`, 'danger');
+      } finally {
+        $('pdfBtn').disabled = false;
+      }
+    }
+
+    async function compressImageBlob(blob, ext, quality, maxEdge) {
+      const img = await loadImage(blob);
+      let w = img.naturalWidth;
+      let h = img.naturalHeight;
+      if (maxEdge && Math.max(w, h) > maxEdge) {
+        const scale = maxEdge / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const lower = ext.toLowerCase();
+      const mime = lower === 'png' ? 'image/png' : 'image/jpeg';
+      const out = await canvasToBlob(canvas, mime, quality);
+      return out || blob;
+    }
+
+    async function processPpt() {
+      const file = ($('pptFile').files || [])[0];
+      if (!file) return setStatus('pptStatus', '請先選擇 PPTX。', 'warn');
+      if (!file.name.toLowerCase().endsWith('.pptx')) return setStatus('pptStatus', '目前只支援 .pptx，不支援舊版 .ppt。', 'warn');
+      $('pptBtn').disabled = true;
+      setStatus('pptStatus', '讀取 PPTX 中...');
+      try {
+        const quality = Number($('pptQuality').value) / 100;
+        const maxEdge = Number($('pptMaxEdge').value) || 1600;
+        const zip = await JSZip.loadAsync(await file.arrayBuffer());
+        const paths = Object.keys(zip.files).filter((path) => /(^|\/)media\/.+\.(jpe?g|png)$/i.test(path));
+        let changed = 0;
+        const report = [];
+        for (let i = 0; i < paths.length; i++) {
+          const path = paths[i];
+          const ext = path.split('.').pop();
+          const originalBlob = await zip.file(path).async('blob');
+          const compressed = await compressImageBlob(originalBlob, ext, quality, maxEdge);
+          if (compressed.size < originalBlob.size) {
+            zip.file(path, await blobToArrayBuffer(compressed));
+            changed++;
+            report.push(`${path.split('/').pop()}: ${formatBytes(originalBlob.size)} → ${formatBytes(compressed.size)}`);
+          }
+          setStatus('pptStatus', `處理圖片：${i + 1} / ${paths.length}`);
+        }
+        const outBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        downloadBlob(outBlob, `localsnap_${safeBaseName(file.name)}_compressed.pptx`);
+        const delta = Math.round((1 - outBlob.size / file.size) * 100);
+        setStatus('pptStatus', `完成，壓縮 ${changed} 張圖片。\n${file.name}: ${formatBytes(file.size)} → ${formatBytes(outBlob.size)} (${delta >= 0 ? '-' + delta : '+' + Math.abs(delta)}%)\n${report.slice(0, 8).join('\n')}${report.length > 8 ? '\n...' : ''}`, 'ok');
+      } catch (err) {
+        setStatus('pptStatus', `PPTX 處理失敗：${err.message || err}`, 'danger');
+      } finally {
+        $('pptBtn').disabled = false;
+      }
+    }
+
+    $('imageBtn').addEventListener('click', processImages);
+    $('pdfBtn').addEventListener('click', processPdf);
+    $('pptBtn').addEventListener('click', processPpt);
+  </script>
+</body>
+</html>
