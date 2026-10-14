@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>陪伴快選器</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:#f6f2ea;color:#2d2d2d}
+.wrap{max-width:760px;margin:auto;padding:20px 14px 48px}
+h1{margin:4px 0 6px;font-size:28px}.sub{color:#6d6962;line-height:1.6;margin-bottom:16px}
+.box{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}select,input{width:100%;padding:11px;border:1px solid #ddd5c9;border-radius:11px;background:#fff;font-size:16px}
+.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid #d9d2c8;background:#fff;border-radius:999px;padding:10px 14px;font-size:15px}
+button.active,.primary{background:#4d6b5d;color:#fff;border-color:#4d6b5d}
+.primary{border-radius:12px;font-weight:800}
+.card{border:1px solid #e4ddd3;border-radius:15px;padding:14px;margin-top:12px}
+.tag{display:inline-block;background:#edf2ee;color:#355547;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.title{font-size:20px;font-weight:800;margin:8px 0}.muted{color:#706b64;line-height:1.6}
+.script{background:#fbf6ef;border-left:4px solid #b68e68;padding:11px 12px;border-radius:10px;line-height:1.7;margin-top:10px}
+.hidden{display:none}.story{font-size:17px;line-height:1.8;white-space:pre-line}
+</style></head>
+<body><div class="wrap">
+<h1>陪伴快選器</h1>
+<div class="sub">適合 WFH 中間快速用：輸入當下狀況，直接給你現在能做的陪伴方式，或一個可以立刻講的故事。</div>
+<div class="tabs">
+<button id="tabPlay" class="active">陪玩</button><button id="tabStory">說故事</button>
+</div>
+
+<div id="playBox" class="box">
+<div class="grid">
+<div><label>有多少時間？</label><select id="mins"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option></select></div>
+<div><label>你的體力</label><select id="energy"><option value="low">很累，只想坐著</option><option value="mid" selected>普通</option><option value="high">可以動起來</option></select></div>
+<div><label>孩子現在</label><select id="mood"><option value="clingy">黏人／覺得爸爸不理他</option><option value="wild">很亢奮／一直搗蛋</option><option value="upset">剛哭過／有點難過</option><option value="bored" selected>無聊</option><option value="calm">平靜</option></select></div>
+<div><label>等等要做什麼？</label><select id="after"><option value="work" selected>爸爸回去工作</option><option value="meal">吃飯</option><option value="nap">午睡／休息</option><option value="free">沒特別安排</option></select></div>
+</div>
+<div style="margin-top:14px"><label>這次最想要</label>
+<div class="tabs" id="goals">
+<button data-v="connect" class="active">補連結感</button><button data-v="move">放電</button><button data-v="calm">安定</button><button data-v="talk">多說話</button><button data-v="help">一起做事</button>
+</div></div>
+<div class="actions" style="margin-top:14px"><button id="go" class="primary">現在陪什麼？</button><button id="random">直接幫我決定</button></div>
+</div>
+
+<div id="storyBox" class="box hidden">
+<div class="grid">
+<div><label>故事主題</label><select id="theme"><option value="dad">爸爸忙完會回來</option><option value="gp">想阿公阿嬤</option><option value="boundary">溫柔但有界線</option><option value="brave">勇敢嘗試</option><option value="fun">搞笑冒險</option></select></div>
+<div><label>主角</label><select id="hero"><option>小兔子</option><option>小熊</option><option>小恐龍</option><option selected>小一</option></select></div>
+<div style="grid-column:1/-1"><label>最近喜歡的東西（可空白）</label><input id="fav" placeholder="例如：垃圾車、玉米、火車"></div>
+</div>
+<div class="actions" style="margin-top:14px"><button id="makeStory" class="primary">幫我講一個故事</button></div>
+</div>
+
+<div id="result" class="box hidden"></div>
+</div>
+
+<script>
+const A=[
+{name:"抱抱充電站",tags:["connect","calm"],e:["low","mid","high"],m:["clingy","upset"],d:"先不安排任務，給他一段完整的爸爸時間。",s:["抱 20–30 秒","讓他選：抱抱、坐旁邊、還是一個小遊戲","最後先預告爸爸等等要回去做什麼"],say:"你剛剛很想爸爸。我現在先陪你一下。等一下爸爸還是要工作，但我會再回來。"},
+{name:"家裡尋寶",tags:["connect","talk"],e:["low","mid","high"],m:["bored","calm"],d:"完全不用玩具，找家裡現成東西。",s:["找一個紅色的東西","找一個圓圓的東西","最後找一樣最想拿給爸爸看的東西"],say:"你找到就拿給爸爸，我會好好看。"},
+{name:"爸爸山洞",tags:["connect","move"],e:["mid","high"],m:["wild","bored","clingy"],d:"你用手臂或雙腿做山洞，讓他鑽過去。",s:["先說：山洞開門囉","每次鑽過換一個動物或火車聲","最後一趟先預告要結束"],say:"最後一趟喔，鑽完爸爸要回去工作，等等再回來找你。"},
+{name:"照片說說看",tags:["connect","calm","talk"],e:["low","mid"],m:["clingy","upset","calm"],d:"看一兩張家人照片，很適合他想阿公阿嬤時。",s:["讓他自己選照片","問：這是誰？我們在哪裡？","補一句簡單描述，不考答案"],say:"你很想阿公阿嬤對不對？我們一起看一下，想念是因為我們很愛他們。"},
+{name:"幫爸爸工作",tags:["help","connect","talk"],e:["low","mid"],m:["bored","calm"],d:"把生活小事變成他的任務。",s:["請他拿紙巾、襪子或小毛巾","完成後描述他做了什麼","最後一起收回去"],say:"爸爸有工作，你也有工作。我們一起做完。"},
+{name:"動物動一動",tags:["move","connect","talk"],e:["mid","high"],m:["wild","bored"],d:"模仿動物走路和聲音，短時間就能放電。",s:["兔子跳 5 下","企鵝走到門口","大象甩鼻子回來","最後一起躺下當小熊"],say:"最後變成睡著的小熊，醒來爸爸就要回去工作囉。"}
+];
+let goal="connect";
+document.querySelectorAll("#goals button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#goals button").forEach(x=>x.classList.remove("active"));b.classList.add("active");goal=b.dataset.v;});
+const rb=document.getElementById("result");
+function show(html){rb.innerHTML=html;rb.classList.remove("hidden");rb.scrollIntoView({behavior:"smooth"});}
+function pick(rand=false){
+ const e=document.getElementById("energy").value,m=document.getElementById("mood").value,after=document.getElementById("after").value,mins=document.getElementById("mins").value;
+ let r=A.map(x=>({x,score:(x.e.includes(e)?3:0)+(x.tags.includes(goal)?4:0)+(x.m.includes(m)?4:0)+(rand?Math.random()*5:0)})).sort((a,b)=>b.score-a.score).slice(0,3);
+ let end=after==="work"?"再一次就結束，爸爸要回去工作；等一下我會再來。":after==="nap"?"最後兩分鐘改成抱抱或坐著，慢慢降速。":after==="meal"?"最後請他幫忙拿一樣餐前物品，順勢轉到吃飯。":"如果兩個人都還有興致，就再玩一輪。";
+ show('<span class="tag">'+mins+' 分鐘</span><div class="title">現在最適合</div><div class="muted">先選第一個就好，不用把活動做完整。</div>'+r.map((z,i)=>'<div class="card"><span class="tag">#'+(i+1)+'</span><div class="title">'+z.x.name+'</div><div class="muted">'+z.x.d+'</div><ol>'+z.x.s.map(q=>'<li>'+q+'</li>').join('')+'</ol><div class="script"><b>可以直接說：</b><br>'+z.x.say+'</div></div>').join('')+'<div class="card"><div class="title">怎麼收尾</div><div class="muted">'+end+'</div></div>');
+}
+document.getElementById("go").onclick=()=>pick(false);document.getElementById("random").onclick=()=>pick(true);
+document.getElementById("tabPlay").onclick=()=>{document.getElementById("playBox").classList.remove("hidden");document.getElementById("storyBox").classList.add("hidden");tabPlay.classList.add("active");tabStory.classList.remove("active");rb.classList.add("hidden")};
+document.getElementById("tabStory").onclick=()=>{document.getElementById("storyBox").classList.remove("hidden");document.getElementById("playBox").classList.add("hidden");tabStory.classList.add("active");tabPlay.classList.remove("active");rb.classList.add("hidden")};
+document.getElementById("makeStory").onclick=()=>{
+ const t=theme.value,h=hero.value,f=fav.value.trim()||"小車車";let a="";
+ if(t==="dad")a=h+"今天一直想找爸爸玩，可是爸爸坐在桌子前工作。"+h+"有點難過，覺得爸爸是不是不想陪他。爸爸蹲下來抱抱他說：「我現在要工作一下，不是不要你。事情做完，我會回來。」";
+ if(t==="gp")a=h+"今天突然很想阿公阿嬤。他說：「我要找阿公阿嬤。」爸爸抱抱他說：「你很想他們對不對？想念一個人，是因為我們很愛他。」";
+ if(t==="boundary")a=h+"看到一樣很想碰的東西，可是爸爸說不能碰。"+h+"很生氣。爸爸說：「你可以生氣，我會陪你；但是這個不能碰。」";
+ if(t==="brave")a=h+"遇到一件有點怕、又有點想試試看的事情。爸爸說：「害怕沒有關係，我陪你試一點點。」";
+ if(t==="fun")a=h+"發現家裡的"+f+"竟然會偷偷說話，而且一開口就說：「快點，我們要去客廳找一座看不見的山！」";
+ show('<span class="tag">可直接念</span><div class="title">今天的小故事</div><div class="card story">'+a+"\n\n於是，"+h+"帶著"+f+"完成一個小任務：拍拍手、走三步，再回到爸爸身邊。爸爸笑著說：「你回來啦。」\n\n最後，"+h+"靠在爸爸旁邊。爸爸說：「不管我正在工作、休息，還是陪你玩，我都還是愛你。」</div>');
+};
+</script></body></html>
